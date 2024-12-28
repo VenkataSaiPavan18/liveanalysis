@@ -1,0 +1,517 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pothole Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 90%;
+            margin: 20px auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .upload-section {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .upload-section input[type="file"] {
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        #uploadBtn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #uploadBtn:hover {
+            background-color: #0056b3;
+        }
+
+        .video-section,
+        .graph-section {
+            display: inline-block;
+            vertical-align: top;
+            margin: 20px 10px;
+        }
+
+        .video-section {
+            width: 65%;
+        }
+
+        .graph-section {
+            width: 30%;
+        }
+
+        #liveFeed {
+            width: 100%;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #plotGraph {
+            width: 100%;
+            height: 400px;
+        }
+
+        #liveFeedContainer, #plotGraphContainer {
+        margin-top: 20px;
+    }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div>
+        <input type="file" id="videoInput" />
+        <button id="uploadBtn">Upload Video</button>
+    </div>
+    
+    <div id="liveFeedContainer">
+        <h3>Live Feed</h3>
+        <img id="liveFeed" src="" alt="Live Video Feed" />
+    </div>
+    
+    <div id="plotGraphContainer">
+        <h3>Pothole Detection Graph</h3>
+        <canvas id="plotGraph" width="400" height="200"></canvas>
+    </div>
+
+    <script>
+        // Hide live feed and graph initially
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('liveFeedContainer').style.display = 'none';
+        document.getElementById('plotGraphContainer').style.display = 'none';
+    });
+
+    // Upload Button Event Listener
+    document.getElementById('uploadBtn').addEventListener('click', function () {
+        const fileInput = document.getElementById('videoInput');
+        if (fileInput.files.length === 0) {
+            alert('Please select a video file to upload.');
+            return;
+        }
+
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Disable button and show loading state
+        const uploadBtn = document.getElementById('uploadBtn');
+        uploadBtn.disabled = true;
+        uploadBtn.textContent = 'Uploading...';
+
+        fetch('/upload', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+
+            // Re-enable button
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = 'Upload Video';
+
+            // If upload successful, show live feed and graph
+            if (data.message === "Video uploaded successfully!") {
+                document.getElementById('liveFeedContainer').style.display = 'block';
+                document.getElementById('plotGraphContainer').style.display = 'block';
+                startLiveFeed();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while uploading the video.');
+
+            // Re-enable button
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = 'Upload Video';
+        });
+    });
+
+    // Start the live feed
+    function startLiveFeed() {
+        const liveFeed = document.getElementById('liveFeed');
+        liveFeed.src = `/video_feed?timestamp=${new Date().getTime()}`;
+    }
+
+
+        // Graph Setup
+    const ctx = document.getElementById('plotGraph').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [], // Frame numbers (IDs)
+            datasets: [
+                {
+                    label: 'Total Potholes Detected',
+                    data: [],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    fill: false
+                },
+                {
+                    label: 'Potholes Per Frame',
+                    data: [],
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 2,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Frame ID'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Count'
+                    }
+                }
+            }
+        }
+    });
+
+    // Fetch Data for Graph
+    function fetchData() {
+        fetch('/get-data')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const newLabels = data.data.map(item => item.ID);
+                    const totalPotholes = data.data.map(item => item["Total Potholes Detected"]);
+                    const potholesPerFrame = data.data.map(item => item["Potholes Per Frame"]);
+
+                    // Update chart
+                    chart.data.labels = newLabels;
+                    chart.data.datasets[0].data = totalPotholes;
+                    chart.data.datasets[1].data = potholesPerFrame;
+                    chart.update();
+                } else {
+                    console.error('Error fetching data:', data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    // Periodically Fetch Data for Graph (every 2 seconds)
+    setInterval(fetchData, 2000);
+    </script>
+</body>
+
+</html> -->
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pothole Detection</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+    
+        h3 {
+            margin-bottom: 10px;
+            color: #444;
+        }
+    
+        /* Container for Upload */
+        #uploadContainer {
+            text-align: center;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 50%;
+        }
+    
+        #uploadContainer input[type="file"] {
+            margin-bottom: 10px;
+        }
+    
+        #uploadContainer button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4caf50;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+    
+        #uploadContainer button:hover {
+            background-color: #45a049;
+        }
+    
+        /* Main Layout */
+        .mainContainer {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 1200px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    
+        /* Live Feed */
+        #liveFeedContainer {
+            flex: 1;
+            margin-right: 20px;
+            text-align: center;
+        }
+    
+        #liveFeed {
+            width: 100%;
+            height: auto;
+            max-height: 400px; /* Ensures the video doesn't overflow */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            background-color: #000;
+        }
+    
+        /* Plot Graph */
+        #plotGraphContainer {
+            flex: 1;
+            text-align: center;
+        }
+        h1 {
+            text-align: center;
+        }
+    
+        #plotGraph {
+            width: 100%;
+            max-height: 400px; /* Ensures the graph doesn't overflow */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+    
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .mainContainer {
+                flex-direction: column;
+                align-items: center;
+            }
+    
+            #liveFeedContainer,
+            #plotGraphContainer {
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <h1>Pothole Detectio Model</h1>
+    <div id="uploadContainer">
+    <input type="file" id="videoInput" />
+    <button id="uploadBtn">Upload Video</button>
+</div>
+
+<div class="mainContainer">
+    <div id="liveFeedContainer">
+        <h3>Live Feed</h3>
+        <img id="liveFeed" src="" alt="Live Video Feed" />
+    </div>
+
+    <div id="plotGraphContainer">
+        <h3>Pothole Detection Graph</h3>
+        <canvas id="plotGraph" width="400" height="200"></canvas>
+    </div>
+</div>
+
+
+    <script>
+        // Hide live feed and graph initially
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('liveFeedContainer').style.display = 'none';
+        document.getElementById('plotGraphContainer').style.display = 'none';
+    });
+
+    // Upload Button Event Listener
+    document.getElementById('uploadBtn').addEventListener('click', function () {
+        const fileInput = document.getElementById('videoInput');
+        if (fileInput.files.length === 0) {
+            alert('Please select a video file to upload.');
+            return;
+        }
+
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Disable button and show loading state
+        const uploadBtn = document.getElementById('uploadBtn');
+        uploadBtn.disabled = true;
+        uploadBtn.textContent = 'Uploading...';
+
+        fetch('/upload', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+
+            // Re-enable button
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = 'Upload Video';
+            
+            // If upload successful, show live feed and graph
+            if (data.message === "Video uploaded successfully!") {
+                document.getElementById('liveFeedContainer').style.display = 'block';
+                document.getElementById('plotGraphContainer').style.display = 'block';
+                startLiveFeed();
+                loadingBar.style.display = 'none';
+                console.log(data.message);
+                document.getElementById("videoFeed").src = "/video_feed";
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while uploading the video.');
+
+            // Re-enable button
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = 'Upload Video';
+        });
+    });
+
+    // Start the live feed
+    function startLiveFeed() {
+        const liveFeed = document.getElementById('liveFeed');
+        liveFeed.src = `/video_feed?timestamp=${new Date().getTime()}`;
+    }
+
+
+        // Graph Setup
+    const ctx = document.getElementById('plotGraph').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [], // Frame numbers (IDs)
+            datasets: [
+                {
+                    label: 'Total Potholes Detected',
+                    data: [],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    fill: false
+                },
+                {
+                    label: 'Potholes Per Frame',
+                    data: [],
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 2,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Frame ID'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Count'
+                    }
+                }
+            }
+        }
+    });
+
+    // Fetch Data for Graph
+    function fetchData() {
+        fetch('/get-data')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const newLabels = data.data.map(item => item.ID);
+                    const totalPotholes = data.data.map(item => item["Total Potholes Detected"]);
+                    const potholesPerFrame = data.data.map(item => item["Potholes Per Frame"]);
+
+                    // Update chart
+                    chart.data.labels = newLabels;
+                    chart.data.datasets[0].data = totalPotholes;
+                    chart.data.datasets[1].data = potholesPerFrame;
+                    chart.update();
+                } else {
+                    console.error('Error fetching data:', data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    // Periodically Fetch Data for Graph (every 2 seconds)
+    setInterval(fetchData, 2000);
+
+    // // clearData();
+
+    // // Cleanup API Call
+    // function clearData() {
+    //     fetch('/clear_data', {
+    //         method: 'POST'
+    //     })
+    //         .then(response => response.json())
+    //         .then(data => {
+    //             if (data.status === 'success') {
+    //                 console.log('Processed data cleared successfully.');
+    //             } else {
+    //                 console.error('Error clearing data:', data.message);
+    //             }
+    //         })
+    //         .catch(error => console.error('Error:', error));
+    // }
+
+
+    </script>
+</body>
+
+</html>
